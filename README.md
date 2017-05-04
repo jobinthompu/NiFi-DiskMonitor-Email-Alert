@@ -64,7 +64,7 @@ Remote URL :  http://${NIFI_HOST}:${NIFI_PORT}/nifi-api/reporting-tasks/${REPORT
 ```
 LEVEL 		:	$.bulletin.level
 MESSAGE 	:	$.bulletin.message
-SOURCE-NAME :	$.bulletin.sourceName
+SOURCE-NAME	:	$.bulletin.sourceName
 TIMESTAMP 	:	$.bulletin.timestamp
 ```
 ![alt tag](https://github.com/jobinthompu/NiFi-DiskMonitor-Email-Alert/blob/master/resources/images/6.png)
@@ -95,10 +95,10 @@ Subject				:	${sourceName} ALERT
 and message content should look something like below to grab all the values:
 
 ```
-Message : 				${MESSAGE}
-  						LEVEL		:	${LEVEL}
-  						TIMESTAMP		:	${TIMESTAMP}
-  						SOURCE-NAME	:	${SOURCE-NAME}
+Message :				${MESSAGE}
+						LEVEL		:	${LEVEL}
+						TIMESTAMP		:	${TIMESTAMP}
+						SOURCE-NAME	:	${SOURCE-NAME}
 ```
 ![alt tag](https://github.com/jobinthompu/NiFi-DiskMonitor-Email-Alert/blob/master/resources/images/9.png)
 
@@ -109,17 +109,17 @@ Message : 				${MESSAGE}
 
 ## Staring the flow, Reporting task and testing it
 
-17) Now lets start the MonitorDiskUsage Reporting task to generate an Alert to test it with below configuration with a lower threshold to force generate the alert. I am monitoring disk on my mac and it’s disk is more than 50% utilized, so I will get this WARNING in the NiFi UI. 
+1) Now lets start the MonitorDiskUsage Reporting task to generate an Alert to test it with below configuration with a lower threshold to force generate the alert. I am monitoring disk on my mac and it’s disk is more than 50% utilized, so I will get this WARNING in the NiFi UI. 
 
 ![alt tag](https://github.com/jobinthompu/NiFi-DiskMonitor-Email-Alert/blob/master/resources/images/11.png)
 
-18) As soon as this Warning show up and the flow created is running you will get alert in your inbox stating the same, similar as below:
+2) As soon as this Warning show up and the flow created is running you will get alert in your inbox stating the same, similar as below:
 
 ![alt tag](https://github.com/jobinthompu/NiFi-DiskMonitor-Email-Alert/blob/master/resources/images/12.png)
 
-19) This concludes the tutorial for Monitoring your Reporting Tasks with NiFi itself.
+3) This concludes the tutorial for Monitoring your Reporting Tasks with NiFi itself.
 
-20) Too lazy to create the flow???.. Download my template [here](https://github.com/jobinthompu/NiFi-DiskMonitor-Email-Alert/blob/master/resources/REPORTING_TASK_ALERT.xml)
+4) Too lazy to create the flow???.. Download my template [here](https://github.com/jobinthompu/NiFi-DiskMonitor-Email-Alert/blob/master/resources/REPORTING_TASK_ALERT.xml)
 
 ## References
 [NiFi REST API](https://nifi.apache.org/docs/nifi-docs/rest-api/index.html)
