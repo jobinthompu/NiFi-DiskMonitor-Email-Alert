@@ -18,46 +18,68 @@ Recently I was asked how to Monitor and alert while MonitorDiskUsage or MonitorM
 
 3) Make a note of the Reporting Task uuid to be monitored:
 
-![alt tag](https://github.com/jobinthompu/NiFi-REST-API-FlowFile-Count-Monitoring/blob/master/resources/images/Original_Flow_Settings.jpg)
+![alt tag](https://github.com/jobinthompu/NiFi-DiskMonitor-Email-Alert/blob/master/resources/images/0.png)
 
-## Creating a Flow to Monitor Connection Queue Count.
+## Creating a Flow to Monitor Reporting Task.
 
-1) Drop a GenerateFlowFile processor to the canvas and make "Run Schedule" 60 sec so we dont execute the flow to often.
+1) Drop a GenerateFlowFile to execute every 5mins, with 1 byte file to trigger the flow.
 
-2) Drop an UpdateAttribute processor, connect GenerateFlowFile's success relation to it and add below properties to it( the connection uuid noted above, threshold say 20, your NiFi host and port):
+![alt tag](https://github.com/jobinthompu/NiFi-DiskMonitor-Email-Alert/blob/master/resources/images/1.png)
 
-```
-CONNECTION_UUID : dcbee9dd-0159-1000-45a7-8306c28f2786
-COUNT			: 20
-NIFI_HOST		: localhost
-NIFI_PORT		: 8080
-```
-![alt tag](https://github.com/jobinthompu/NiFi-REST-API-FlowFile-Count-Monitoring/blob/master/resources/images/UpdateAttribute.jpg)
-
-3) Drop a InvokeHTTP processor to the canvas, connect UpdateAttribute's success relation to it, auto terminate all other relations and update its 2 properties as below:
+2) Drop an UpdateAttribute processor to the canvas with below configuration:
 
 ```
-HTTP Method	: GET
-Remote URL	: http://${NIFI_HOST}:${NIFI_PORT}/nifi-api/connections/${CONNECTION_UUID}
+NIFI_HOST 			: <Your NiFi FQDN>
+NIFI_PORT 			: <Your NiFi http port>
+REPORTING-TASK-UUID : <Your MonitorDiskUsage or MonitorMemory controller service uuid>
 ```
-![alt tag](https://github.com/jobinthompu/NiFi-REST-API-FlowFile-Count-Monitoring/blob/master/resources/images/InvokeHTTP.jpg)
+![alt tag](https://github.com/jobinthompu/NiFi-DiskMonitor-Email-Alert/blob/master/resources/images/2.png)
 
-4) Drop an EvaluateJsonPath processor to extract values from json with below properties, connect Response relation of InvokeHTTP to it, and auto terminate its failure and unmatched relations.
+3) Connect Success relationship of GenerateFlowFile to UpdateAttribute.
 
+4) Drop a InvokeHTTP processor to the canvas, and configure it as below:
 ```
-QUEUE_NAME : $.status.name
-QUEUE_SIZE : $.status.aggregateSnapshot.flowFilesQueued
-```
-![alt tag](https://github.com/jobinthompu/NiFi-REST-API-FlowFile-Count-Monitoring/blob/master/resources/images/EvaluateJsonPath.jpg)
-
-5) Drop a RouteOnAttribute processor to the canvas with below configs, connect EvaluateJsonPath's matched relation to it and auto terminate its unmatched relation.
+HTTP Method : GET
+Remote URL :  http://${NIFI_HOST}:${NIFI_PORT}/nifi-api/reporting-tasks/${REPORTING-TASK-UUID}
 
 ```
-Queue_Size_Exceeded : ${QUEUE_SIZE:gt(${COUNT})}
-```
-![alt tag](https://github.com/jobinthompu/NiFi-REST-API-FlowFile-Count-Monitoring/blob/master/resources/images/RouteOnAttribute.jpg)
+![alt tag](https://github.com/jobinthompu/NiFi-DiskMonitor-Email-Alert/blob/master/resources/images/3.png)
 
-6) Lastly add a PutEmail processor, connect RouteOnAttribute's matched relation to it and auto terminate all its relations. below are my properties set, you have to update it with your SMTP details:
+5) Connect Success relation of UpdateAttribute  to InvokeHTTP and auto terminate all relationships of InvokeHTTP processor but Response relationship.
+
+6) Drop a EvaluateJsonPath processor to the canvas with below configuration:
+
+![alt tag](https://github.com/jobinthompu/NiFi-DiskMonitor-Email-Alert/blob/master/resources/images/4.png)
+
+7) Auto terminate All relationship of EvaluateJsonPath processor except Matched relationship and connect InvokeHTTP processor’s Response relation to it.
+
+8) Drop a SplitJson processor to canvas with below Configurtaion. [The reason for splitting json is because the REST call to reporting task gives duplicate json array in the result, which contains details we need.]
+
+![alt tag](https://github.com/jobinthompu/NiFi-DiskMonitor-Email-Alert/blob/master/resources/images/5.png)
+
+9) Connect Matched relationship of EvaluateJsonPath to SplitJson processor.
+
+10) Drop another EvaluateJsonPath processor to the canvas with below configuration:
+
+```
+LEVEL 		:	$.bulletin.level
+MESSAGE 	:	$.bulletin.message
+SOURCE-NAME :	$.bulletin.sourceName
+TIMESTAMP 	:	$.bulletin.timestamp
+```
+![alt tag](https://github.com/jobinthompu/NiFi-DiskMonitor-Email-Alert/blob/master/resources/images/6.png)
+
+11) Add a connection with split relationship from SplitJson to second EvaluateJsonPath processor. Auto-terminate other relationships.
+
+12) Add a ControlRate processor so that only one alert is sent for multiple json arrays with below configuration which passes only 1 flowfile per minute.
+
+![alt tag](https://github.com/jobinthompu/NiFi-DiskMonitor-Email-Alert/blob/master/resources/images/7.png)
+
+13) Add a connection from EvaluateJsonPath processor to ControlRate processor with FlowFile Expiration as 30 sec. Auto-terminate other relations.
+
+![alt tag](https://github.com/jobinthompu/NiFi-DiskMonitor-Email-Alert/blob/master/resources/images/8.png)
+
+14) Finally Drop an PutEmail processor to canvas with below configuration to sent your alerts, update with your SMTP details
 
 ```
 SMTP Hostname		:	west.xxxx.yourServer.net
@@ -67,38 +89,37 @@ SMTP Password		: 	Its_myPassw0rd_updateY0urs
 SMTP TLS			:	true
 From				:	jgeorge@hortonworks.com
 To					:	jgeorge@hortonworks.com
-Subject				:	Queue Size Exceeded Threshold
+Subject				:	${sourceName} ALERT
 ```
-![alt tag](https://github.com/jobinthompu/NiFi-REST-API-FlowFile-Count-Monitoring/blob/master/resources/images/PutEmail.jpg)
 
 and message content should look something like below to grab all the values:
 
 ```
-Message				:	Queue Size Exceeded Threshold for ${CONNECTION_UUID}
-
-						Connection Name				:	${QUEUE_NAME}
-						Threshold Set				:	${COUNT}
-						Current FlowFile Count 		:	${QUEUE_SIZE}
+Message : 				${MESSAGE}
+  						LEVEL		:	${LEVEL}
+  						TIMESTAMP		:	${TIMESTAMP}
+  						SOURCE-NAME	:	${SOURCE-NAME}
 ```
-![alt tag](https://github.com/jobinthompu/NiFi-REST-API-FlowFile-Count-Monitoring/blob/master/resources/images/message_content.jpg)
+![alt tag](https://github.com/jobinthompu/NiFi-DiskMonitor-Email-Alert/blob/master/resources/images/9.png)
 
-7) Now the flow is completed and li should look similar to below:
+15) Auto terminate all relationships of PutEmail processor and connect Success relationship of ControlRate processor to it.
 
-![alt tag](https://github.com/jobinthompu/NiFi-REST-API-FlowFile-Count-Monitoring/blob/master/resources/images/FinalFlow.jpg)
+16) Now you have your flow ready and can start it to monitor and sent Email Alert for UI Notification thrown by NiFi when Disk or Memory utilization exceeds given threshold.
 
-## Staring the flow and testing it
 
-1) Lets make sure at least 21 flow files are pending in the connection named 'DataToFileSystem' which was created in the Prerequisites
+## Staring the flow, Reporting task and testing it
 
-2) Now lets start the flow and you should receive mail alert from NiFi stating the count exceeded Threshold set which is 20 in our case.
+17) Now lets start the MonitorDiskUsage Reporting task to generate an Alert to test it with below configuration with a lower threshold to force generate the alert. I am monitoring disk on my mac and it’s disk is more than 50% utilized, so I will get this WARNING in the NiFi UI. 
 
-   My sample alret looks like below:
+![alt tag](https://github.com/jobinthompu/NiFi-DiskMonitor-Email-Alert/blob/master/resources/images/11.png)
 
-![alt tag](https://github.com/jobinthompu/NiFi-REST-API-FlowFile-Count-Monitoring/blob/master/resources/images/Alert_email.jpg)
+18) As soon as this Warning show up and the flow created is running you will get alert in your inbox stating the same, similar as below:
 
-3) This concludes the tutorial for monitoring your connection queue count with NiFi.
+![alt tag](https://github.com/jobinthompu/NiFi-DiskMonitor-Email-Alert/blob/master/resources/images/12.png)
 
-4) Too lazy to create the flow???.. Download my template [here](https://github.com/jobinthompu/NiFi-REST-API-FlowFile-Count-Monitoring/blob/master/resources/Monitor_Connection_Queue_Count.xml)
+19) This concludes the tutorial for Monitoring your Reporting Tasks with NiFi itself.
+
+20) Too lazy to create the flow???.. Download my template [here](https://github.com/jobinthompu/NiFi-DiskMonitor-Email-Alert/blob/master/resources/REPORTING_TASK_ALERT.xml)
 
 ## References
 [NiFi REST API](https://nifi.apache.org/docs/nifi-docs/rest-api/index.html)
