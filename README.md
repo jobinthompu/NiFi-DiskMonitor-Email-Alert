@@ -14,9 +14,9 @@ Recently I was asked how to Monitor and alert while MonitorDiskUsage or MonitorM
 
 2) You Already have a MonitorDiskUsage/MonitorMemory Reporting task created and configured, set a lower threshold to force generate the alert while testing.
 
-![alt tag](https://github.com/jobinthompu/NiFi-REST-API-FlowFile-Count-Monitoring/blob/master/resources/images/OriginalFlow.jpg)
+![alt tag](https://github.com/jobinthompu/NiFi-DiskMonitor-Email-Alert/blob/master/resources/images/10.png)
 
-3) Make a note of the Connection name and uuid to be monitored:
+3) Make a note of the Reporting Task uuid to be monitored:
 
 ![alt tag](https://github.com/jobinthompu/NiFi-REST-API-FlowFile-Count-Monitoring/blob/master/resources/images/Original_Flow_Settings.jpg)
 
