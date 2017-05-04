@@ -95,10 +95,10 @@ Subject				:	${sourceName} ALERT
 and message content should look something like below to grab all the values:
 
 ```
-Message :				${MESSAGE}
-						LEVEL		:	${LEVEL}
-						TIMESTAMP		:	${TIMESTAMP}
-						SOURCE-NAME	:	${SOURCE-NAME}
+Message					:	${MESSAGE}
+							LEVEL		:	${LEVEL}
+							TIMESTAMP		:	${TIMESTAMP}
+							SOURCE-NAME	:	${SOURCE-NAME}
 ```
 ![alt tag](https://github.com/jobinthompu/NiFi-DiskMonitor-Email-Alert/blob/master/resources/images/9.png)
 
