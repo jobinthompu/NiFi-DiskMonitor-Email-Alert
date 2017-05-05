@@ -417,7 +417,7 @@
               </entry>
               <entry>
                 <key>Subject</key>
-                <value>${sourceName} ALERT</value>
+                <value>${SOURCE-NAME} ALERT</value>
               </entry>
               <entry>
                 <key>Message</key>
@@ -1131,5 +1131,5 @@ SOURCE-NAME		:	${SOURCE-NAME}</value>
       <name>REPORTING_TASK_ALERT</name>
     </processGroups>
   </snippet>
-  <timestamp>05/04/2017 16:51:49 EDT</timestamp>
+  <timestamp>05/05/2017 14:43:29 EDT</timestamp>
 </template>
