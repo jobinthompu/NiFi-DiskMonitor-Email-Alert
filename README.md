@@ -89,7 +89,7 @@ SMTP Password			: 	Its_myPassw0rd_updateY0urs
 SMTP TLS			:	true
 From				:	jgeorge@hortonworks.com
 To				:	jgeorge@hortonworks.com
-Subject				:	${sourceName} ALERT
+Subject				:	${SOURCE-NAME} ALERT
 ```
 
 and message content should look something like below to grab all the values:
