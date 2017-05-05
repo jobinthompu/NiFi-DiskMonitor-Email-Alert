@@ -31,7 +31,7 @@ Recently I was asked how to Monitor and alert while MonitorDiskUsage or MonitorM
 ```
 NIFI_HOST 			: <Your NiFi FQDN>
 NIFI_PORT 			: <Your NiFi http port>
-REPORTING-TASK-UUID : <Your MonitorDiskUsage or MonitorMemory controller service uuid>
+REPORTING-TASK-UUID 		: <Your MonitorDiskUsage or MonitorMemory controller service uuid>
 ```
 ![alt tag](https://github.com/jobinthompu/NiFi-DiskMonitor-Email-Alert/blob/master/resources/images/2.png)
 
@@ -39,8 +39,8 @@ REPORTING-TASK-UUID : <Your MonitorDiskUsage or MonitorMemory controller service
 
 4) Drop a InvokeHTTP processor to the canvas, and configure it as below:
 ```
-HTTP Method : GET
-Remote URL :  http://${NIFI_HOST}:${NIFI_PORT}/nifi-api/reporting-tasks/${REPORTING-TASK-UUID}
+HTTP Method 	: GET
+Remote URL 	:  http://${NIFI_HOST}:${NIFI_PORT}/nifi-api/reporting-tasks/${REPORTING-TASK-UUID}
 
 ```
 ![alt tag](https://github.com/jobinthompu/NiFi-DiskMonitor-Email-Alert/blob/master/resources/images/3.png)
@@ -82,13 +82,13 @@ TIMESTAMP 	:	$.bulletin.timestamp
 14) Finally Drop an PutEmail processor to canvas with below configuration to sent your alerts, update with your SMTP details
 
 ```
-SMTP Hostname		:	west.xxxx.yourServer.net
+SMTP Hostname			:	west.xxxx.yourServer.net
 SMTP Port			:	587
-SMTP Username		:	jgeorge@hortonworks.com
-SMTP Password		: 	Its_myPassw0rd_updateY0urs
+SMTP Username			:	jgeorge@hortonworks.com
+SMTP Password			: 	Its_myPassw0rd_updateY0urs
 SMTP TLS			:	true
 From				:	jgeorge@hortonworks.com
-To					:	jgeorge@hortonworks.com
+To				:	jgeorge@hortonworks.com
 Subject				:	${sourceName} ALERT
 ```
 
@@ -96,9 +96,9 @@ and message content should look something like below to grab all the values:
 
 ```
 Message					:	${MESSAGE}
-							LEVEL		:	${LEVEL}
-							TIMESTAMP		:	${TIMESTAMP}
-							SOURCE-NAME	:	${SOURCE-NAME}
+						LEVEL		:	${LEVEL}
+						TIMESTAMP	:	${TIMESTAMP}
+						SOURCE-NAME	:	${SOURCE-NAME}
 ```
 ![alt tag](https://github.com/jobinthompu/NiFi-DiskMonitor-Email-Alert/blob/master/resources/images/9.png)
 
